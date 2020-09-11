@@ -4,7 +4,7 @@ import re
 import numpy as np
 import gensim
 from sklearn.cluster import KMeans
-import pymorphy2
+from sklearn.feature_extraction.text import CountVectorizer
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s %(levelname)s %(message)s')
@@ -65,14 +65,13 @@ class W2VEmbReader:
         km_aspects = km.cluster_centers_
         if os.path.exists(seed_words_path):
             aspects = []
-            morph = pymorphy2.MorphAnalyzer()
+            tokenizer = CountVectorizer().build_tokenizer()
             with open(seed_words_path) as f:
                 for line in f:
                     one_aspect = []
-                    for word in re.split('\W+', line.lower()):
-                        w = morph.parse(word)[0].normal_form
-                        if w in self.embeddings:
-                            one_aspect.append(self.embeddings[w])
+                    for word in tokenizer(line.lower()):
+                        if word in self.embeddings:                            
+                            one_aspect.append(self.embeddings[word])
                     if one_aspect:
                         one_aspect = np.mean(one_aspect, axis=0)
                     else:
